@@ -63,7 +63,7 @@ def move(mode=True,num=10):
     driver.close()
     driver.quit()
 
-def trim_data():
+def trim_data(driver,url):
     # 必要なデータのみにトリミング
     pass
 
