@@ -21,7 +21,7 @@ def _patched_constructor(*args, **kwargs):
     return _original_constructor(*args, **kwargs)
 
 # ダウンロードのページまでの移動
-def auto_operation(mode=True,num=10):
+def move(mode=True,num=10):
     # driverの設定
     options = Options()
     if mode:
@@ -63,8 +63,8 @@ def auto_operation(mode=True,num=10):
     driver.close()
     driver.quit()
 
-def triming_data():
-    #必要なデータのみにトリミング
+def trim_data():
+    # 必要なデータのみにトリミング
     pass
 
 # urlからダウンロード
@@ -99,4 +99,4 @@ def download_files(url):
 if __name__ == "__main__":
     #実行
     subprocess.Popen.__init__ = _patched_constructor
-    auto_operation(mode=True,num=10)
+    move(mode=True,num=10)
