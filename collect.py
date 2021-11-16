@@ -1,10 +1,15 @@
+import os
 import requests
 import datetime
-import os
+import urllib.request as req
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 import subprocess
+import chardet
+import hsreplay
+import hslog
 
 _original_constructor = subprocess.Popen.__init__
 
@@ -48,11 +53,12 @@ def move(mode=True,num=10):
         # xmlファイルのURL取得
         replay_xml = driver.find_element_by_class_name("infobox-settings.hidden-sm")
         xml_url = replay_xml.find_element_by_tag_name('a').get_attribute('href')
-        #print("xml_url {}: {}".format(n,xml_url))
+        print("xml_file {}: {}".format(n,xml_url))
         sleep(1)
 
         # ダウンロード
         download_files(xml_url)
+        #download_file(xml_url)
 
         # 元のサイトに戻る
         driver.get('https://hsreplay.net/?hl=ja')
@@ -63,14 +69,11 @@ def move(mode=True,num=10):
     driver.close()
     driver.quit()
 
-def trim_data(driver,url):
-    # 必要なデータのみにトリミング
-    pass
-
 # urlからダウンロード
 def download_files(url):
     # ダウンロード
     response = requests.get(url)
+    print(response.text)
     
     # ファイル名
     path = os.getcwd()
@@ -87,16 +90,13 @@ def download_files(url):
     if response_status == None:
 
         # ファイル生成
-        file = open(path+"/replay/"+filename,"wb")
+        with open(path+"/replay/"+filename,"w") as file:
+            file.write(response.text)
 
-        # 書き込み
-        for chunk in response.iter_content(100000):
-            file.write(chunk)
-
-        file.close()
         print("done!")
+
 
 if __name__ == "__main__":
     #実行
     subprocess.Popen.__init__ = _patched_constructor
-    move(mode=True,num=10)
+    move(mode=True,num=1)
