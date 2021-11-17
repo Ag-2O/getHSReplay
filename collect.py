@@ -2,7 +2,6 @@ import os
 import requests
 import datetime
 import urllib.request as req
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
@@ -99,4 +98,4 @@ def download_files(url):
 if __name__ == "__main__":
     #実行
     subprocess.Popen.__init__ = _patched_constructor
-    move(mode=True,num=1)
+    move(mode=True,num=3)
