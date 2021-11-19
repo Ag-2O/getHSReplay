@@ -32,18 +32,13 @@ def get_step():
     print("tag: {}".format(child.tag))
     print("attrib: {}".format(child.attrib))
 
-    for ch in child.findall("Block"):
-        #print("Block : {}".format(ch.attrib))
-        for c in ch.findall("TagChange"):
-            health = ""
-            attack = ""
-            if c.attrib["tag"] == "45":
-                health = c.attrib["value"]
-            if c.attrib["tag"] == "47":
-                attack = c.attrib["value"]
-            print("health : {}, attack : {}".format(health,attack))
-            #print("    TagChange : {}, health : {}, attack : {}".format(c.attrib,health,attack))
+
+    for fe in child.findall("FullEntity"):
+        print("card or hero: {}".format(fe.attrib))
+        for t in fe.findall("Tag"):
+            print("Tag : {}".format(t.attrib))
         print("\n")
+                
 
     pass
 
