@@ -1,16 +1,6 @@
 import os
-from typing import ValuesView
-from hsreplay.elements import GameEntityNode, TagNode
-import requests
-import datetime
-import urllib.request as req
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from time import sleep
-import subprocess
 from hsreplay.document import HSReplayDocument as hsd
 import hsreplay.utils as hsu
-import hslog
 import xml.etree.ElementTree as ET
 
 # xmlファイルを解読する
