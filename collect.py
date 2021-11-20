@@ -93,20 +93,37 @@ def move(mode=True,num=10):
 def get_replay(driver):
 
     # todo: 状態遷移毎に取得するようにしたい
-    # todo: 状態遷移のあるサイトのスクレイピングを調べる
-    # todo: try&exceptは使いたくない
+    # todo: 遷移のあるサイトのスクレイピングを調べる
+    # todo: win/loseを取得出来たら繰り返しを止める
+    # todo: 1step毎に取るようにしたい
+    # todo: カードの効果中に状態を取得したくない -> なんか文字列取得できてたらpassするとか？try/exceptで
+    # todo: 手札と盤面の情報も取りたい
+    # todo: 全体でタイミングを合わせる必要がある -> 作り直しするべきでは？
+    # todo: 可能であればxmlの方が良い
 
-    # プレイヤー情報
-    get_player_info(driver)
+    n = 0
+    while(n < 50):
+        sleep(2)
+        # プレイヤー情報
+        get_player_info(driver)
 
-    # 手札情報
-    get_hand_info(driver)
+        # 手札情報
+        get_hand_info(driver)
 
-    # 盤面情報
-    get_board_info(driver)
+        # 盤面情報
+        get_board_info(driver)
 
-    # ターン毎に使ったカードの取得
-    get_play_history(driver)
+        # ターン毎に使ったカードの取得
+        get_play_history(driver)
+
+        # 1ステップ進める
+        step(driver)
+
+        # ゲーム終了 → ループから抜ける
+        if finish():
+            break
+
+        n += 1
 
 def get_player_info(driver):
     # プレイヤー情報の取得
@@ -117,38 +134,40 @@ def get_player_info(driver):
     # 相手のマナ
 
     try:
-        player_info = driver.find_element_by_class_name("player.inactive")
-    except:
-        player_info = driver.find_element_by_class_name("player")
-
-    try:
-        health = player_info.find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
-    except:
-        health = player_info.find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
-    
-    player_mana = player_info.find_element_by_class_name("details").find_element_by_class_name("tray").find_element_by_tag_name("span")
-    player_max_mana = player_mana.get_attribute("textContent")[0]
-    player_current_mana = player_mana.get_attribute("textContent")[2]
-
-    try:
-        opponent_info = driver.find_element_by_class_name("player.top.inactive")
-    except:
+        # プレイヤーのターン
+        player_info = driver.find_element_by_class_name("player.current")
         opponent_info = driver.find_element_by_class_name("player.top")
+    except:
+        # 相手のターン
+        #player_info = driver.find_element_by_class_name("player")
+        #opponent_info = driver.find_element_by_class_name("player.top.current")
+        return
+
+    try:
+        health = player_info.find_element_by_class_name("entity.in-play.hero").find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
+    except:
+        health = player_info.find_element_by_class_name("entity.in-play.hero").find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
+
+
+    player_mana = player_info.find_element_by_class_name("details").find_element_by_class_name("tray").find_element_by_tag_name("span")
+    player_max_mana = player_mana.get_attribute("textContent")[2]
+    player_current_mana = player_mana.get_attribute("textContent")[0]
     
     try:
-        op_health = opponent_info.find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
+        op_health = opponent_info.find_element_by_class_name("entity.in-play.hero").find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
     except:
-        op_health = opponent_info.find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
+        op_health = opponent_info.find_element_by_class_name("entity.in-play.hero").find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
     
     op_mana = opponent_info.find_element_by_class_name("details").find_element_by_class_name("tray").find_element_by_tag_name("span")
-    op_max_mana = op_mana.get_attribute("textContent")[0]
+    op_max_mana = op_mana.get_attribute("textContent")[2]
 
-    op_hand_num = len(opponent_info.find_elements_by_class_name("entity-list.hand"))
+    op_hand_num = len(opponent_info.find_element_by_class_name("entity-list.hand").find_elements_by_tag_name("li"))
 
     print("health: {}, max_mana: {}, current_mana: {}".format(health,player_max_mana,player_current_mana))
     print("op_health: {}, op_mana: {}, op_hand_num: {}".format(op_health,op_max_mana,op_hand_num))
+    print("----------------------------------------------------------------------------")
 
-def get_hand_info():
+def get_hand_info(driver):
     # 手札情報の取得
     # カードの種類
     # カードのコスト
@@ -157,14 +176,23 @@ def get_hand_info():
     # 効果の有無
     pass
 
-def get_board_info():
+def get_board_info(driver):
     # 盤面情報の取得
     # 自分のカードの情報
     # 相手のカードの情報
     pass
 
-def get_play_history():
+def get_play_history(driver):
     # ターン毎に使ったカードの取得
+    pass
+
+def step(driver):
+    # ステップ進行
+    
+    pass
+
+def finish():
+    # ゲーム終了かどうか
     pass
 
 
