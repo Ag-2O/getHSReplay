@@ -10,6 +10,6 @@
 ・ゲームの状態の取得  
 ・行動履歴の取得  
 
-'''
+```
 pip install hearthstone hsreplay hslog selenium
-'''
+```
