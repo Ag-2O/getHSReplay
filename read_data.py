@@ -32,15 +32,32 @@ def get_step():
     print("tag: {}".format(child.tag))
     print("attrib: {}".format(child.attrib))
 
+    # デッキの出力
+    for pl in child.findall("Player"):
+        for d in pl.findall("Deck"):
+            for c in d.findall("Card"):
+                print("card: {}".format(c.attrib))
 
+    # 初期状態の出力
     for fe in child.findall("FullEntity"):
         print("card or hero: {}".format(fe.attrib))
         for t in fe.findall("Tag"):
             print("Tag : {}".format(t.attrib))
         print("\n")
-                
+    
+    # 状態遷移の出力
+    for tc in child.findall("TagChange"):
+        print("tag_change: {}".format(tc.attrib))
+
+
+
+
+
+
 
     pass
+
+
 
 if __name__ == "__main__":
     #annotate()

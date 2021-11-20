@@ -9,10 +9,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import subprocess
-import chardet
-import hsreplay
-import hslog
-
 
 _original_constructor = subprocess.Popen.__init__
 
@@ -39,27 +35,41 @@ def move(mode=True,num=10):
     driver = webdriver.Chrome(driver_path+"/chromedriver", options=options)
     wait = WebDriverWait(driver, 3)
 
-    # deck count
-    dt = DeckType()
-
     # HSreplayを開く
     driver.get('https://hsreplay.net/?hl=ja')
     sleep(1)
 
-    for n in range(num):
-        print("Iter: {}".format(n))
-        # ライブデータの選択
-        # dekki no senntaku
+    n = 0
+    while(num > n):
+        deck_name = ""
+        op_deck_name = ""
+
         try:
+            # ライブデータの選択
             live_data = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'replay-feed-item')))
+            # デッキ名の取得
+            deck = live_data.find_elements_by_tag_name("span")
+            deck_name = deck[0].get_attribute("textContent")
+            op_deck_name = deck[1].get_attribute("textContent")
         except:
             continue
+
+        # 特定のデッキ名で無ければダウンロードしない
+        #if "ウォリアー" not in deck_name or "ハンター" not in op_deck_name:
+        #    continue
+
+        print("Iter: {}, deck_name: {} vs {}".format(n,deck_name,op_deck_name))
+
+        # リプレイのリンクを取得
         link = live_data.get_attribute('href')
         sleep(1)
 
-        # そのデータのサイトへ遷移
+        # そのリプレイのサイトへ遷移
         driver.get(link)
         sleep(1)
+
+        # リプレイの解読
+        get_replay(driver)
 
         # xmlファイルのURL取得
         replay_xml = driver.find_element_by_class_name("infobox-settings.hidden-sm")
@@ -67,16 +77,96 @@ def move(mode=True,num=10):
         sleep(1)
 
         # ダウンロード
-        download_files(xml_url)
+        #download_files(xml_url)
 
         # 元のサイトに戻る
         driver.get('https://hsreplay.net/?hl=ja')
         sleep(1)
+
+        n += 1
     
     print("complete!")
 
     driver.close()
     driver.quit()
+
+def get_replay(driver):
+
+    # todo: 状態遷移毎に取得するようにしたい
+    # todo: 状態遷移のあるサイトのスクレイピングを調べる
+    # todo: try&exceptは使いたくない
+
+    # プレイヤー情報
+    get_player_info(driver)
+
+    # 手札情報
+    get_hand_info(driver)
+
+    # 盤面情報
+    get_board_info(driver)
+
+    # ターン毎に使ったカードの取得
+    get_play_history(driver)
+
+def get_player_info(driver):
+    # プレイヤー情報の取得
+    # プレイヤーの体力
+    # プレイヤーの最大マナ
+    # プレイヤーのマナ
+    # 相手の体力
+    # 相手のマナ
+
+    try:
+        player_info = driver.find_element_by_class_name("player.inactive")
+    except:
+        player_info = driver.find_element_by_class_name("player")
+
+    try:
+        health = player_info.find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
+    except:
+        health = player_info.find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
+    
+    player_mana = player_info.find_element_by_class_name("details").find_element_by_class_name("tray").find_element_by_tag_name("span")
+    player_max_mana = player_mana.get_attribute("textContent")[0]
+    player_current_mana = player_mana.get_attribute("textContent")[2]
+
+    try:
+        opponent_info = driver.find_element_by_class_name("player.top.inactive")
+    except:
+        opponent_info = driver.find_element_by_class_name("player.top")
+    
+    try:
+        op_health = opponent_info.find_element_by_class_name("stats").find_element_by_class_name("health").get_attribute("textContent")
+    except:
+        op_health = opponent_info.find_element_by_class_name("stats").find_element_by_class_name("health.negative").get_attribute("textContent")
+    
+    op_mana = opponent_info.find_element_by_class_name("details").find_element_by_class_name("tray").find_element_by_tag_name("span")
+    op_max_mana = op_mana.get_attribute("textContent")[0]
+
+    op_hand_num = len(opponent_info.find_elements_by_class_name("entity-list.hand"))
+
+    print("health: {}, max_mana: {}, current_mana: {}".format(health,player_max_mana,player_current_mana))
+    print("op_health: {}, op_mana: {}, op_hand_num: {}".format(op_health,op_max_mana,op_hand_num))
+
+def get_hand_info():
+    # 手札情報の取得
+    # カードの種類
+    # カードのコスト
+    # 体力
+    # 攻撃力
+    # 効果の有無
+    pass
+
+def get_board_info():
+    # 盤面情報の取得
+    # 自分のカードの情報
+    # 相手のカードの情報
+    pass
+
+def get_play_history():
+    # ターン毎に使ったカードの取得
+    pass
+
 
 def count_deck_type(mode=True,num=10):
     # driverの設定
@@ -88,7 +178,6 @@ def count_deck_type(mode=True,num=10):
     driver = webdriver.Chrome(driver_path+"/chromedriver", options=options)
     wait = WebDriverWait(driver, 3)
 
-    # deck count
     dt = DeckType()
 
     # HSreplayを開く
@@ -102,11 +191,9 @@ def count_deck_type(mode=True,num=10):
             live_data = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'replay-feed-item')))
             deck = live_data.find_elements_by_tag_name("span")
             deck_name1 = deck[0].get_attribute("textContent")
-            deck_name2 = deck[1].get_attribute("textContent")
 
-            # count deck type 
+            # デッキのカウント
             dt.deck_count(deck_name1)
-            dt.deck_count(deck_name2)
         except:
             continue
     
@@ -120,7 +207,6 @@ def count_deck_type(mode=True,num=10):
 def download_files(url):
     # ダウンロード
     response = requests.get(url)
-    print(response.text)
     
     # ファイル名
     path = os.getcwd()
@@ -137,23 +223,25 @@ def download_files(url):
     if response_status == None:
 
         # ファイル生成
-        with open(path+"/replay/"+filename,"w") as file:
+        with open(path+"/warriarVSdruid/"+filename,"w") as file:
             file.write(response.text)
 
         print("done!")
 
 class DeckType:
     def __init__(self):
+        # デッキの種類のカウント
         self.deck_dict = {}
 
     def deck_count(self,deck_name):
-        # count deck type
+        # カウント
         if deck_name in self.deck_dict.keys():
             self.deck_dict[deck_name] += 1
         else:
             self.deck_dict[deck_name] = 1
     
     def print_deck_type(self):
+        # 出力
         sum_value = 0
         sort_dict = sorted(self.deck_dict.items(), key=lambda x:x[1], reverse=True)
         for item in sort_dict:
@@ -164,5 +252,5 @@ class DeckType:
 if __name__ == "__main__":
     #実行
     subprocess.Popen.__init__ = _patched_constructor
-    #move(mode=True,num=100)
-    count_deck_type(mode=True,num=10000)
+    #count_deck_type(mode=True,num=10000)
+    move(mode=True,num=1)
