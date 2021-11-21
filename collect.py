@@ -65,7 +65,8 @@ def move(mode=True,num=10):
         sleep(1)
 
         # そのリプレイのサイトへ遷移
-        driver.get(link)
+        #driver.get(link)
+        driver.get("https://hsreplay.net/replay/fRHRVqyNkTKv9sCCJy72pa")
         sleep(1)
 
         # リプレイの解読
